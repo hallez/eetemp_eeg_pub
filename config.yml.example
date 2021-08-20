@@ -1,22 +1,15 @@
 ---
   directories:
-    base-dir: /Users/hrzucker/workspace/eetemp
+    base-dir: /<your-path-here>/eetemp
     scripts: experiment-scripts
     eeg-scripts: eeg-analysis-scripts
-    mri-scripts: mri-analysis-scripts
     raw-behavioral-dir: raw-behavioral
     analyzed-behavioral-dir: analyzed-behavioral
     raw-eeg-dir: raw-eeg
     analyzed-eeg-dir: analyzed-eeg
-    raw-mri-dir: /Volumes/dml/hrzucker/eetemp/raw-mri
-    unzipped-mri-dir: /Volumes/dml/hrzucker/eetemp/unzipped-dicoms
-    eedti-unzipped-mri-dir: /Volumes/dml/hrzucker/eedti
-    analyzed-mri-dir: /Volumes/dml/hrzucker/eetemp/analyzed-mri
-    stimuli: /Users/hrzucker/Dropbox/work/ranganath_lab/data/eetemp/stimuli/BOSS-stimuli
-    practice-stimuli: /Users/hrzucker/Dropbox/work/ranganath_lab/data/eetemp/stimuli/practice-stimuli
-    dropbox-folder: /Users/hrzucker/Dropbox/work/ranganath_lab/data/eetemp
+    stimuli: /<your-path-here>/stimuli/BOSS-stimuli
+    practice-stimuli: /<your-path-here>/stimuli/practice-stimuli
+    dropbox-folder: /<your-path-here>/eetemp
     logs-dir: logs
     vendor-dir: vendor
     subject-config-dir: subject-config-files
-    glasser-rsfc-dir: eetemp-rsfc-for-glasser-pilot
-    group-rois-dir: rois-standard
