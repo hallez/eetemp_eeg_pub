@@ -1,10 +1,17 @@
 # Project setup
+## Program requirements:
+* Matlab (analyses were done in R2014b)
+* R
+* Python (scripts assume python 2, but should also work w/ Python 3)
+
+## Setting paths
 1. Copy `config.yml.example` to `config.yml` and update paths for local machine.
 ```
 cp config.yml.example config.yml
 vim config.yml
 ```
 
+## Package requirements
 1. Install python dependencies
 ```
 pip install -r requirements.txt
@@ -24,6 +31,9 @@ pip install -r requirements.txt
   * trimOutlier >=0.16 (install as plugin for EEGLab)
   * fieldtrip
   * //TODO Karina: add information re what's needed for cluster-based permutation testing
+
+1. R packages
+  * halle (scripts will automatically download latest version from [GitHub](https://github.com/hallez/halle)), tidyverse (>= 1.3.0), yaml
 
 # Subjects to exclude
 //TODO Karina: confirm which subjects are excluded for EEG analyses only (ie, if dropped for MRI, may be included here)
@@ -54,7 +64,7 @@ pip install -r requirements.txt
 
 # EEG Analysis
 ## Preprocessing (can run through `ica.m` using `preproc_combined.m`)
-<!-- 1. Downsample the data to 128 Hz `downsample_preproc.m`
+1. Downsample the data to 128 Hz `downsample_preproc.m`
 1. Add in electrode IDs `relabel_electrodes.m`
 1. Re-label the event codes with meaningful values `revalue_events.m`
 1. Reference `rereference.m`
@@ -65,6 +75,9 @@ pip install -r requirements.txt
 1. Automatically identify bad channels to be removed for ICA `identify_bad_channels.m`
   * Can check that this is reasonable by using `summarize_bad_channels.m` and `summarize_bad_channels.R` to plot
   * Channels are simply *identified* here are being bad and are then held out from ICA. They will be interpolated later.
+---
+
+//TODO Halle start reviewing scripts below here
 1. Epoch separately for time-frequency (`epoch_tf.m`) and ERPs (`epoch_erp.m` and `epoch_erp_ica_data.m`)
   * **STILL NEED TO UPDATE EPOCH_TF.M**
 1. Automatically identify bad epochs to be removed for ICA `remove_bad_epochs_for_ica.m` and then also remove these from the 0.1Hz filtered data `remove_bad_epochs.m`
