@@ -75,20 +75,20 @@ pip install -r requirements.txt
 1. Automatically identify bad channels to be removed for ICA `identify_bad_channels.m`
   * Can check that this is reasonable by using `summarize_bad_channels.m` and `summarize_bad_channels.R` to plot
   * Channels are simply *identified* here are being bad and are then held out from ICA. They will be interpolated later.
----
-
-//TODO Halle start reviewing scripts below here
-1. Epoch separately for time-frequency (`epoch_tf.m`) and ERPs (`epoch_erp.m` and `epoch_erp_ica_data.m`)
-  * **STILL NEED TO UPDATE EPOCH_TF.M**
-1. Automatically identify bad epochs to be removed for ICA `remove_bad_epochs_for_ica.m` and then also remove these from the 0.1Hz filtered data `remove_bad_epochs.m`
+1. Epoch for ERPs `epoch_erp_ica_data.m`
+1. Automatically identify bad epochs to be removed for ICA `remove_bad_epochs.m` and then also remove these from the 0.1Hz filtered data `remove_bad_epochs.m`
   * Summarize bad epochs with `summarize_bad_epochs.m` and `summarize_bad_epochs.R`
-  * **DECIDE IF WANT TO ALSO USE `pop_eegthresh` - see `threshold_reject.m`**
 1. Run ica to identify eyeblink components for later removal. `ica.m`
 1. Run sasica to help figure out which components to remove `sasica_preproc.m`
   * Note - this is a step that requires manual intervention (i.e., it cannot be run as a script across subjects)
-  * Components that are candidates for removal should be highly correlated with the VEOG channels and have a frontal distribtion (see Chaumon et al., 2015 for examples)
+  * Components that are candidates for removal should be highly correlated with the VEOG channels and have a frontal distribution (see Chaumon et al., 2015 for examples)
   * Candidate components should be checked by trying out removing them and ensuring only occular activity is removed.
+  * //TODO: figure out where the manually-edited files are saved & ensure they're uploaded to OSF (and explain here in README where to find them)
 1. Manually check the data (this will be done in the process of reviewing the ICA components).
+
+---
+
+//TODO Halle start reviewing scripts below here
 1. Manually review ICA components `ica_btw_data.m` (to manually review)
   * This is where the two different HPF data streams get merged. Based on Makoto recommendations, the ICA components are computed on 1Hz HPF data and then applied to the 0.1 HPF data.
 1. Create subject-specific files for blink components to remove (script also generates information about bad channels and epochs): `create_subject_drop_files.py`
@@ -106,6 +106,5 @@ pip install -r requirements.txt
 1. Extract area under the curve for subject specific ERPs: `compute_subj_integrals_no_study.m`
 1. Create a group study dataset. `make_study.m` (this script exists, but finding the plotting with STUDY nonintuitive)
 1. Group-level ERPs `plot_erps.m`
-1. Time frequency `compute_tf.m`
 1. Plot difference waveforms using `plot_erps_GA.m` script and `erp_plotting2.m` function, also for additional channels including fronto-temporal areas. Calculate ERPs with source response taken into account (REM_source_hits - REM trials only followed by correct source response and FAM_source_miss - FAM trials only followed by incorrect source response).
 1. Perform cluster-based permutation test on ERPs using within-UO design to compare the ERPs between FAM, REM and CR cnditions, corrected for MCP. Follow scripts: `ft1_trial_definition_and_averaging.m`, `ft2_defining_neighborhood.m`, `ft3_configuring_the_test_parameters.m`, `ft4_stats_for_comparing_conditions_and_calculating_GAs.m`, `ft5a_plotting_clusters_FAMvsCR.m`, `ft5b_plotting_clusters_REMvsCR.m`, `ft5c_plotting_clusters_REMvsFAM.m`. Need to have 'biosemi64new.lay' channel layout file. -->
