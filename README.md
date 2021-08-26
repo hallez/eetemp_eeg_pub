@@ -30,7 +30,7 @@ pip install -r requirements.txt
   * biosig >= 3.3.0 (follow the on-screen prompts the first time you try to load data using File -> Import data -> Using EEGLAB functions and plugins -> from Biosemi BDF file (BIOSIG toolbox))
   * trimOutlier >=0.16 (install as plugin for EEGLab)
   * fieldtrip
-  * //TODO Karina: add information re what's needed for cluster-based permutation testing
+  * //TODO Karina: add information re what's needed for cluster-based permutation testing (seems like SPM12 is needed???)
 
 1. R packages
   * halle (scripts will automatically download latest version from [GitHub](https://github.com/hallez/halle)), tidyverse (>= 1.3.0), yaml
@@ -98,12 +98,12 @@ pip install -r requirements.txt
 1. Identify subjects who do not meet the minimum number of trials: `count_erp_epochs.m`
   * TODO: Karina, can you confirm you used this?
 1. Baseline correct ERPs `baseline.m`
-
----
-
-//TODO Halle start reviewing scripts below here
 1. Create a group study dataset. `make_study.m` (this script exists, but finding the plotting with STUDY nonintuitive)
-  * TODO: Karina, did you use this?
 1. Group-level ERPs `plot_erps.m`
+  * TODO: Karina, did you use this script? I overwrote my original w/ the one you had on Dropbox - please confirm it's accurate
 1. Plot difference waveforms using `plot_erps_GA.m` script and `erp_plotting2.m` function, also for additional channels including fronto-temporal areas. Calculate ERPs with source response taken into account (REM_source_hits - REM trials only followed by correct source response and FAM_source_miss - FAM trials only followed by incorrect source response).
-1. Perform cluster-based permutation test on ERPs using within-UO design to compare the ERPs between FAM, REM and CR cnditions, corrected for MCP. Follow scripts: `ft1_trial_definition_and_averaging.m`, `ft2_defining_neighborhood.m`, `ft3_configuring_the_test_parameters.m`, `ft4_stats_for_comparing_conditions_and_calculating_GAs.m`, `ft5a_plotting_clusters_FAMvsCR.m`, `ft5b_plotting_clusters_REMvsCR.m`, `ft5c_plotting_clusters_REMvsFAM.m`. Need to have 'biosemi64new.lay' channel layout file. -->
+  * TODO: Karina, I don't have a script called `erp_plotting2.m` I also think we should remove the second sentence that refers to accounting for source responses since these analyses weren't included in the paper. Am I missing something?
+  * TODO: Karina w/in plot_erps_GA.m there are hard-coded file paths to your machine. These should instead be set w/in the config file and then referenced with a variable here.
+1. Perform cluster-based permutation test on ERPs using within-UO design to compare the ERPs between FAM, REM and CR conditions, corrected for MCP. Follow scripts: `ft1_trial_definition_and_averaging.m`, `ft2_defining_neighborhood.m`, `ft3_configuring_the_test_parameters.m`, `ft4_stats_for_comparing_conditions_and_calculating_GAs.m`, `ft5a_plotting_clusters_FAMvsCR.m`, `ft5b_plotting_clusters_REMvsCR.m`, `ft5c_plotting_clusters_REMvsFAM.m`. Need to have 'biosemi64new.lay' channel layout file.
+  * TODO: Karina, can you help clarify the instructions here? What does within-UO mean? Also, can these scripts be run individually or is the order here important? Also, the paths here all need to changed to follow the convention of setting them w/in config.yml.example rather than hard-coding to your machine If biosemi64new.lay file is needed then we should provide it w/in the repo
+1. TODO: Karina in the Dropbox folder, there are a number of scripts that start with "permutation" but they're not referenced in this README - can you please add instructions for them here and upload to the correct folder w/in the repo?
