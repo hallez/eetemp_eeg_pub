@@ -94,14 +94,16 @@ pip install -r requirements.txt
 1. Remove manually identified bad epochs (must be done before merging because epoch ids are block specific): `remove_manual_bad_epochs.m`
 # //TODO Karina: can you put this "epoch_erp_ica_data.m" in the correct position in this list of script analyses (it also appears earlier in this README). Also is this still what you used to generate the ERPs in Fig 2???
 1. (I think this is when this step is applied) `epoch_erp_ica_data.m`: this file will also contain labels for trial types
+1. Merge the data across blocks `merge.m`
+1. Identify subjects who do not meet the minimum number of trials: `count_erp_epochs.m`
+  * TODO: Karina, can you confirm you used this?
+1. Baseline correct ERPs `baseline.m`
+
 ---
 
 //TODO Halle start reviewing scripts below here
-1. Merge the data across blocks `merge.m`
-1. Identify subjects who do not meet the minimum number of trials: `count_erp_epochs.m`
-1. Baseline correct ERPs (`baseline.m`) `baseline.m`
-1. Extract area under the curve for subject specific ERPs: `compute_subj_integrals_no_study.m`
 1. Create a group study dataset. `make_study.m` (this script exists, but finding the plotting with STUDY nonintuitive)
+  * TODO: Karina, did you use this?
 1. Group-level ERPs `plot_erps.m`
 1. Plot difference waveforms using `plot_erps_GA.m` script and `erp_plotting2.m` function, also for additional channels including fronto-temporal areas. Calculate ERPs with source response taken into account (REM_source_hits - REM trials only followed by correct source response and FAM_source_miss - FAM trials only followed by incorrect source response).
 1. Perform cluster-based permutation test on ERPs using within-UO design to compare the ERPs between FAM, REM and CR cnditions, corrected for MCP. Follow scripts: `ft1_trial_definition_and_averaging.m`, `ft2_defining_neighborhood.m`, `ft3_configuring_the_test_parameters.m`, `ft4_stats_for_comparing_conditions_and_calculating_GAs.m`, `ft5a_plotting_clusters_FAMvsCR.m`, `ft5b_plotting_clusters_REMvsCR.m`, `ft5c_plotting_clusters_REMvsFAM.m`. Need to have 'biosemi64new.lay' channel layout file. -->
