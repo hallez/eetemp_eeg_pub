@@ -83,23 +83,20 @@ pip install -r requirements.txt
   * Note - this is a step that requires manual intervention (i.e., it cannot be run as a script across subjects)
   * Components that are candidates for removal should be highly correlated with the VEOG channels and have a frontal distribution (see Chaumon et al., 2015 for examples)
   * Candidate components should be checked by trying out removing them and ensuring only occular activity is removed.
-  * //TODO: figure out where the manually-edited files are saved & ensure they're uploaded to OSF (and explain here in README where to find them)
 1. Manually check the data (this will be done in the process of reviewing the ICA components).
-
----
-
-//TODO Halle start reviewing scripts below here
 1. Manually review ICA components `ica_btw_data.m` (to manually review)
   * This is where the two different HPF data streams get merged. Based on Makoto recommendations, the ICA components are computed on 1Hz HPF data and then applied to the 0.1 HPF data.
 1. Create subject-specific files for blink components to remove (script also generates information about bad channels and epochs): `create_subject_drop_files.py`
 1. --- Can run following steps with the script `post_ica_processing_combined.m`
 1. Remove eyeblink components: `ica_btw_data_no_manual.m`
 1. Interpolate removed channels. `interpolate_chans.m`
-  * Interpolating *after* ICA as recommended by this post [!https://sccn.ucsd.edu/pipermail/eeglablist/2017/012384.html]. This makes more sense to me so that all of the data that's fed into earlier ICA and filtering steps is independent channels rather than interpolations.
-1. Get a summary of all of the rejections (see Maureen's `get_rejection_report`)
-  * **DOESN'T EXIST YET**
+  * Interpolating *after* ICA as recommended by this post [!https://sccn.ucsd.edu/pipermail/eeglablist/2017/012384.html].
 1. Remove manually identified bad epochs (must be done before merging because epoch ids are block specific): `remove_manual_bad_epochs.m`
+# //TODO Karina: can you put this "epoch_erp_ica_data.m" in the correct position in this list of script analyses (it also appears earlier in this README). Also is this still what you used to generate the ERPs in Fig 2???
 1. (I think this is when this step is applied) `epoch_erp_ica_data.m`: this file will also contain labels for trial types
+---
+
+//TODO Halle start reviewing scripts below here
 1. Merge the data across blocks `merge.m`
 1. Identify subjects who do not meet the minimum number of trials: `count_erp_epochs.m`
 1. Baseline correct ERPs (`baseline.m`) `baseline.m`
