@@ -29,38 +29,30 @@ pip install -r requirements.txt
   * sasica >=1.3.4 (install as a plugin for EEGLab)
   * biosig >= 3.3.0 (follow the on-screen prompts the first time you try to load data using File -> Import data -> Using EEGLAB functions and plugins -> from Biosemi BDF file (BIOSIG toolbox))
   * trimOutlier >=0.16 (install as plugin for EEGLab)
-  * fieldtrip
-  * //TODO Karina: add information re what's needed for cluster-based permutation testing (seems like SPM12 is needed???)
+  * FieldTrip
+  * SPM12
 
 1. R packages
   * halle (scripts will automatically download latest version from [GitHub](https://github.com/hallez/halle)), tidyverse (>= 1.3.0), yaml
 
 # Subjects to exclude
-//TODO Karina: confirm which subjects are excluded for EEG analyses only (ie, if dropped for MRI, may be included here)
 * s202: less than 30 remembered trials
-* s203: issue in MRI data, run 1 **need to figure out what to do**
 * s209: noise in mastoid channels that contaminates the data once it's re-referenced
 * s215: less than 30 familiar trials (but not excluded from analyses)
 * s216: incidental MRI finding
-* s217: problem when merge behavioral and EEG data **need to figure out what to do**
 * s220: less than 30 remembered trials
-* s222: subject had previously participated in a related pilot (EEG and MRI sessions not completed)
+* s222: subject had previously participated in a related pilot (EEG session not completed)
 * s225: less than 30 remembered trials
-* s234: exclude block 4 due to mislabeled event codes
-* s237: exclude block 4 due to experimenter error
 * s238: less than 30 familiar trials (but not excluded from analyses)
-* s239: subject did not understand task instructions (EEG and MRI sessions not completed)
-* s240: excluding temporarily; seems to be something off in scoring of source data
+* s239: subject did not understand task instructions (EEG session not completed)
 * s248: less than 30 remembered trials
 * s249: less than 30 familiar trials (but not excluded from analyses)
-* s250: less than 30 remembered trials after EEG cleaning (only had 31 before cleaning)
 
 # Behavioral Analysis
 1. Open the RStudio project file in `analysis-scripts`
   * Remember that this will write out the analyzed data to a local file (ie, it's not synched across machines automatically so need to re-run analyses on each computer)
 1. Load in the data `load-behavior.R`
 1. Generate behavioral analyses `analyze-behavior.R`
-//TODO Karina: remove scripts here that you didn't use for final EEG analyses
 
 # EEG Analysis
 ## Preprocessing (can run through `ica.m` using `preproc_combined.m`)
@@ -71,12 +63,11 @@ pip install -r requirements.txt
 1. High-pass filter `hpf_preproc.m` and `hpf_for_ica.m`
   * This is done twice because one filter value is used to calculate ICA weights while the other is used to actually filter the data of interest.
   * This also means that the preprocessing pipeline gets split at this point and rejoins when removing ICA components
-1. Low-pass filter `lpf_preproc.m` and `lpf_for_ica.m`
 1. Automatically identify bad channels to be removed for ICA `identify_bad_channels.m`
   * Can check that this is reasonable by using `summarize_bad_channels.m` and `summarize_bad_channels.R` to plot
   * Channels are simply *identified* here are being bad and are then held out from ICA. They will be interpolated later.
-1. Epoch for ERPs `epoch_erp_ica_data.m`
-1. Automatically identify bad epochs to be removed for ICA `remove_bad_epochs.m` and then also remove these from the 0.1Hz filtered data `remove_bad_epochs.m`
+1. Epoch for ERPs `epoch_trials.m`
+1. Automatically identify bad epochs to be removed for ICA `identify_and_remove_bad_epochs_for_ica.m` and then also remove these from the 0.1Hz filtered data `remove_bad_epochs.m`
   * Summarize bad epochs with `summarize_bad_epochs.m` and `summarize_bad_epochs.R`
 1. Run ica to identify eyeblink components for later removal. `ica.m`
 1. Run sasica to help figure out which components to remove `sasica_preproc.m`
@@ -92,18 +83,17 @@ pip install -r requirements.txt
 1. Interpolate removed channels. `interpolate_chans.m`
   * Interpolating *after* ICA as recommended by this post [!https://sccn.ucsd.edu/pipermail/eeglablist/2017/012384.html].
 1. Remove manually identified bad epochs (must be done before merging because epoch ids are block specific): `remove_manual_bad_epochs.m`
-# //TODO Karina: can you put this "epoch_erp_ica_data.m" in the correct position in this list of script analyses (it also appears earlier in this README). Also is this still what you used to generate the ERPs in Fig 2???
-1. (I think this is when this step is applied) `epoch_erp_ica_data.m`: this file will also contain labels for trial types
 1. Merge the data across blocks `merge.m`
 1. Identify subjects who do not meet the minimum number of trials: `count_erp_epochs.m`
-  * TODO: Karina, can you confirm you used this?
 1. Baseline correct ERPs `baseline.m`
-1. Create a group study dataset. `make_study.m` (this script exists, but finding the plotting with STUDY nonintuitive)
-1. Group-level ERPs `plot_erps.m`
-  * TODO: Karina, did you use this script? I overwrote my original w/ the one you had on Dropbox - please confirm it's accurate
-1. Plot difference waveforms using `plot_erps_GA.m` script and `erp_plotting2.m` function, also for additional channels including fronto-temporal areas. Calculate ERPs with source response taken into account (REM_source_hits - REM trials only followed by correct source response and FAM_source_miss - FAM trials only followed by incorrect source response).
-  * TODO: Karina, I don't have a script called `erp_plotting2.m` I also think we should remove the second sentence that refers to accounting for source responses since these analyses weren't included in the paper. Am I missing something?
-  * TODO: Karina w/in plot_erps_GA.m there are hard-coded file paths to your machine. These should instead be set w/in the config file and then referenced with a variable here.
-1. Perform cluster-based permutation test on ERPs using within-UO design to compare the ERPs between FAM, REM and CR conditions, corrected for MCP. Follow scripts: `ft1_trial_definition_and_averaging.m`, `ft2_defining_neighborhood.m`, `ft3_configuring_the_test_parameters.m`, `ft4_stats_for_comparing_conditions_and_calculating_GAs.m`, `ft5a_plotting_clusters_FAMvsCR.m`, `ft5b_plotting_clusters_REMvsCR.m`, `ft5c_plotting_clusters_REMvsFAM.m`. Need to have 'biosemi64new.lay' channel layout file.
-  * TODO: Karina, can you help clarify the instructions here? What does within-UO mean? Also, can these scripts be run individually or is the order here important? Also, the paths here all need to changed to follow the convention of setting them w/in config.yml.example rather than hard-coding to your machine If biosemi64new.lay file is needed then we should provide it w/in the repo
-1. TODO: Karina in the Dropbox folder, there are a number of scripts that start with "permutation" but they're not referenced in this README - can you please add instructions for them here and upload to the correct folder w/in the repo?
+
+## Plotting
+1. Group-level ERPs `plot_erps.m` and `erp_plotting.m`
+
+## Nonparametric cluster-based permutation analysis
+1. Perform the comparison between Familiar and Correct Rejection ERP trials as well as Remember and Familiar ERP trials at the group level `permutation_analysis_overall.m`. Need to have 'biosemi64new.lay' channel layout file.
+1. Plot the overall Familiar - Correct Rejection and Remember - Familiar effects, respectively, corresponding roughly to the significant clusters identified in the data-driven permutation analysis `permutation_analysis_overall_plot_familiarity.m` and `permutation_analysis_overall_plot_recollection.m` 
+
+## Correlation between ERPs and behavioral data
+1. Perform the correlation analysis between Familiar - Correct Rejection ERP differences with familiarity behavioral estimates and between Remember - Familiar ERP differences with recollection behavioral estimates `permutation_analysis_correlation.m`
+1. Plot the familiarity and recollection correlation effects, respectively, corresponding roughly to the significant clusters identified in the data-driven permutation analysis `permutation_analysis_correlation_plot_familiarity.m` and `permutation_analysis_correlation_plot_recollection.m`
