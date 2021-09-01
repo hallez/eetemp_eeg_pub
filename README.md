@@ -61,8 +61,8 @@ pip install -r requirements.txt
 1. Re-label the event codes with meaningful values `revalue_events.m`
 1. Reference `rereference.m`
 1. High-pass filter `hpf_preproc.m` and `hpf_for_ica.m`
-  * This is done twice because one filter value is used to calculate ICA weights while the other is used to actually filter the data of interest.
-  * This also means that the preprocessing pipeline gets split at this point and rejoins when removing ICA components
+   * This is done twice because one filter value is used to calculate ICA weights while the other is used to actually filter the data of interest.
+   * This also means that the preprocessing pipeline gets split at this point and rejoins when removing ICA components
 1. Automatically identify bad channels to be removed for ICA `identify_bad_channels.m`
   * Can check that this is reasonable by using `summarize_bad_channels.m` and `summarize_bad_channels.R` to plot
   * Channels are simply *identified* here are being bad and are then held out from ICA. They will be interpolated later.
