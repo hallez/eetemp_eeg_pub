@@ -19,11 +19,11 @@ pip install -r requirements.txt
 
 1. Install external toolboxes for eeg analyses:
    * eeglab: https://sccn.ucsd.edu/eeglab/downloadtoolbox.php
-    * can edit line 135 of `pop_subcomp` to say:
-     ```
-     eegplot( EEG.data(EEG.icachansind,:,:), 'srate', EEG.srate, 'title', 'Black = channel before rejection; red = after rejection -- eegplot()', ...
+         * can edit line 135 of `pop_subcomp` to say:
+            ```
+            eegplot( EEG.data(EEG.icachansind,:,:), 'srate', EEG.srate, 'title', 'Black = channel before rejection; red = after rejection -- eegplot()', ...
            	 'limits', [EEG.xmin EEG.xmax]*1000, 'data2', compproj, 'eloc_file', EEG.chanlocs(EEG.icachansind));
-     ```
+            ```
    * erplab >= 6.1.4 (install as a plugin for EEGLab)
    * clean_rawdata >= 0.32 (install as a plugin for EEGLab)
    * sasica >=1.3.4 (install as a plugin for EEGLab)
