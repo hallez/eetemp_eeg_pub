@@ -18,22 +18,22 @@ pip install -r requirements.txt
 ```
 
 1. Install external toolboxes for eeg analyses:
-   * eeglab: https://sccn.ucsd.edu/eeglab/downloadtoolbox.php
-         * can edit line 135 of `pop_subcomp` to say:
-            ```
-            eegplot( EEG.data(EEG.icachansind,:,:), 'srate', EEG.srate, 'title', 'Black = channel before rejection; red = after rejection -- eegplot()', ...
-           	 'limits', [EEG.xmin EEG.xmax]*1000, 'data2', compproj, 'eloc_file', EEG.chanlocs(EEG.icachansind));
-            ```
-   * erplab >= 6.1.4 (install as a plugin for EEGLab)
-   * clean_rawdata >= 0.32 (install as a plugin for EEGLab)
-   * sasica >=1.3.4 (install as a plugin for EEGLab)
-   * biosig >= 3.3.0 (follow the on-screen prompts the first time you try to load data using File -> Import data -> Using EEGLAB functions and plugins -> from Biosemi BDF file (BIOSIG toolbox))
-   * trimOutlier >=0.16 (install as plugin for EEGLab)
-   * FieldTrip
-   * SPM12
+  * eeglab: https://sccn.ucsd.edu/eeglab/downloadtoolbox.php
+    * can edit line 135 of `pop_subcomp` to say:
+      ```
+      eegplot( EEG.data(EEG.icachansind,:,:), 'srate', EEG.srate, 'title', 'Black = channel before rejection; red = after rejection -- eegplot()', ...
+      'limits', [EEG.xmin EEG.xmax]*1000, 'data2', compproj, 'eloc_file', EEG.chanlocs(EEG.icachansind));
+      ```
+  * erplab >= 6.1.4 (install as a plugin for EEGLab)
+  * clean_rawdata >= 0.32 (install as a plugin for EEGLab)
+  * sasica >=1.3.4 (install as a plugin for EEGLab)
+  * biosig >= 3.3.0 (follow the on-screen prompts the first time you try to load data using File -> Import data -> Using EEGLAB functions and plugins -> from Biosemi BDF file (BIOSIG toolbox))
+  * trimOutlier >=0.16 (install as plugin for EEGLab)
+  * FieldTrip
+  * SPM12
 
 1. R packages
-   * halle (scripts will automatically download latest version from [GitHub](https://github.com/hallez/halle)), tidyverse (>= 1.3.0), yaml
+  * halle (scripts will automatically download latest version from [GitHub](https://github.com/hallez/halle)), tidyverse (>= 1.3.0), yaml
 
 # Subjects to exclude
 * s202: less than 30 remembered trials
