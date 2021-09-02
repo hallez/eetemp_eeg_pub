@@ -32,6 +32,7 @@ VERSION_FLAG <- 7
 project_dir <- ("../")
 dropbox_dir <- paste0(halle::ensure_trailing_slash(config$directories$`dropbox-folder`))
 raw_behavioral_dir <- paste0(dropbox_dir, halle::ensure_trailing_slash("raw-behavioral"))
+
 analyzed_behavioral_dir <- paste0(project_dir,halle::ensure_trailing_slash(config$directories$`analyzed-behavioral-dir`))
 
 #' # Figure out subjects
@@ -320,7 +321,6 @@ for(cur_subj in subjects){
     tidy_retrieval <- cur_retrieval %>%
       dplyr::filter(!is.na(stim)) %>% # this will remove between-block rows for eeg version
       dplyr::mutate(trial_number.item_recog = responseLoop.thisTrialN + 1) %>%
-      # dplyr::mutate(trial_number.quest_source = responseLoop.thisTrialN + 1) %>% # THIS IS WRONG B/C TRIAL ORDER FOR QUESTION RETRIEVAL NOT THE SAME AS ENCODING - COMMENTING OUT FOR NOW (12/18/17)
       dplyr::mutate(encQuest_factor = factor(encQuest, levels = c("bathtub", "convenience store", "fridge", "supermarket"))) %>%
       dplyr::mutate(item_recog_resp.keys_stripped = sub("\\['([fghjk]*)'\\]", "\\1", item_recog_resp.keys)) %>% # will get a "NAs introduced by coercion" error for multiple responses
       dplyr::mutate(item_recog_resp.numeric = as.numeric(car::recode(item_recog_resp.keys_stripped, c("'f'=1; 'g'=2;'h'=3;'j'=4;'k'=5")))) %>%
