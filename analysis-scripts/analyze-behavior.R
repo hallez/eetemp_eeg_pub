@@ -32,11 +32,8 @@ EXCLUDE_SUBJ_FLAG <- 1
 
 #' ## Setup paths
 project_dir <- ("../")
-dropbox_dir <- paste0(halle::ensure_trailing_slash(config$directories$`dropbox-folder`))
 analyzed_behavioral_dir <- paste0(project_dir,halle::ensure_trailing_slash(config$directories$`analyzed-behavioral-dir`))
 group_analyzed_dir <- paste0(analyzed_behavioral_dir, halle::ensure_trailing_slash("summary"))
-figures_dir <- paste0(dropbox_dir, halle::ensure_trailing_slash("figures"))
-dir.create(figures_dir)
 
 #' ### Print version
 sprintf("Analyzing version %d", VERSION_FLAG)
@@ -46,7 +43,6 @@ if(VERSION_FLAG < 7){
   expt_str <- "experiment"
 }
 group_analyzed_dir <- paste0(analyzed_behavioral_dir, halle::ensure_trailing_slash(sprintf("%s-summary", expt_str)))
-plots_dir <- paste0(analyzed_behavioral_dir, halle::ensure_trailing_slash(sprintf("%s-plots", expt_str)))
 
 if(EXCLUDE_SUBJ_FLAG == 1){
   exclude_subjects <- c(202, 209, 215, 216, 220, 222, 225, 238, 239, 248, 249)
@@ -56,8 +52,6 @@ if(EXCLUDE_SUBJ_FLAG == 1){
   rem_trialnums_cutoff <- 0
 }
 
-#' ## Make plot directory
-dir.create(plots_dir, recursive = TRUE, showWarnings = FALSE)
 
 #' # Load data
 load(paste0(halle::ensure_trailing_slash(group_analyzed_dir),"tidied_data.Rdata"))
@@ -79,7 +73,6 @@ recdata <- recdata %>%
 
 #' # Score 
 # setup masks to use for scoring purposes
-# could probably also use something like `dplyr::recode` and `ifelse`, but this is clearer
 oldmask <- which(recdata$oldNew== "old")
 newmask <- which(recdata$oldNew== "new")
 
@@ -171,6 +164,7 @@ recdata$questionScoreLiberal[newmask] <- "new_item"
 recdata$questionScoreLiberal[item_misses] <- "random_response"
 table(recdata$participant, recdata$questionScoreLiberal)
 
+
 #' ## List source
 max_encList <- max(listsource$encList)
 if(VERSION_FLAG < 6) {
@@ -235,242 +229,139 @@ for(isubj in 1:length(subj_list)){
   
 }
 
-#' # d Prime
-# compute z-scored response rate 
-item_respcount_by_oldNew <- recdata %>%
-  dplyr::mutate(itemResp_oldNew = as.factor(ifelse(item_recog_resp %in% c("rem", "fam"), "old", as.character(item_recog_resp)))) %>% 
-  dplyr::group_by(subj_factor, oldNew, itemResp_oldNew) %>%
-  dplyr::summarise(respcount = length(itemResp_oldNew))
 
-head(item_respcount_by_oldNew)
 
-z_resprate_oldNew <- recdata %>%
-  dplyr::group_by(subj_factor, oldNew) %>%
-  dplyr::summarise(allcount = length(oldNew)) %>%
-  dplyr::left_join(item_respcount_by_oldNew) %>%
-  dplyr::mutate(resprate = respcount/allcount) %>%
-  dplyr::group_by(oldNew, itemResp_oldNew) %>%
-  dplyr::mutate(mean_resprate = mean(resprate, na.rm = TRUE), # do as mutate instead of summarize to preserve `resprate` column
-                sd_resprate = sd(resprate, na.rm = TRUE)) %>%
+subjects <- unique(all_scored$participant)
+
+#' ## Compute behavioral summaries by participant, rather than by trial
+# start by just printing out - can double check that same values as in `analyze-behavior.R`
+table(all_scored$participant, all_scored$itemScore)
+table(all_scored$participant, all_scored$questionScore)
+
+#' ### Item recog counts
+item_scored_counts <- all_scored %>%
+  dplyr::group_by(participant, itemScore) %>%
+  dplyr::tally() %>%
+  tidyr::spread(key = itemScore, value = n) %>%
+  dplyr::select(-participant) %>%
+  dplyr::summarise_all(funs(sum(., na.rm = TRUE))) %>%
+  dplyr::group_by(participant) %>%
+  # count number of old and new objects for each subjects not including excluded trials
+  dplyr::mutate(num_old = sum(Rec, Fam, Miss, na.rm = TRUE), 
+                num_new = sum(`R-FA`, `F-FA`, CR, na.rm = TRUE),
+                rem_hit_rate = Rec / num_old, 
+                fam_hit_rate = Fam / num_old,
+                rem_fa_rate = `R-FA` / num_new,
+                fam_fa_rate = `F-FA` / num_new,
+                cr_rate = CR / num_new,
+                rec_dualprocess = rem_hit_rate - rem_fa_rate, # calculation based on Barnett/HML slack message 9/24/18
+                fam_hits_corrected = fam_hit_rate / (1 - rem_hit_rate), 
+                fam_corrected = fam_fa_rate / (1 - rem_fa_rate),
+                fam_dualprocess = fam_hits_corrected - fam_corrected)
+
+
+
+
+#' ### Liberal question source counts
+source_liberal_scored_counts <- all_scored %>%
+  dplyr::select(participant, questionScoreLiberal) %>%
+  dplyr::group_by(participant, questionScoreLiberal) %>%
+  dplyr::tally() %>%
+  tidyr::spread(key = questionScoreLiberal, value = n) %>%
+  dplyr::select(-participant) %>%
+  dplyr::summarise_all(funs(sum(., na.rm = TRUE))) %>%
+  # rename duplicated columns for clarity
+  dplyr::rename(questliberal_source_incorrect = incorrect,
+                questliberal_source_random_response = random_response,
+                questliberal_source_new_item = new_item)
+
+sourceXitemmem_liberal_scored_counts <- all_scored %>%
+  dplyr::select(participant, questionScoreLiberal, itemScore) %>%
+  # to avoid confusion w/ source exact, revalue
+  dplyr::mutate(questionScoreLiberal_reval = dplyr::recode(questionScoreLiberal, 
+                                                           "incorrect" = "questliberal_source_incorrect",
+                                                           "random_response" = "questliberal_source_random_response",
+                                                           "new_item" = "questliberal_source_new_item")) %>%
+  dplyr::group_by(participant, questionScoreLiberal_reval, itemScore) %>%
+  dplyr::tally() %>%
+  # merge item and question
+  tidyr::unite(col = itemmem_questmemliberal, itemScore, questionScoreLiberal_reval) %>%
+  tidyr::spread(key = itemmem_questmemliberal, value = n) %>%
+  dplyr::select(-participant) %>%
+  dplyr::summarise_all(funs(sum(., na.rm = TRUE))) 
+
+#' ### Exact question source counts
+source_exact_scored_counts <- all_scored %>%
+  dplyr::select(participant, questionScore) %>%
+  dplyr::group_by(participant, questionScore) %>%
+  dplyr::tally() %>%
+  tidyr::spread(key = questionScore, value = n) %>%
+  dplyr::select(-participant) %>%
+  dplyr::summarise_all(funs(sum(., na.rm = TRUE)))
+
+sourceXitemmem_exact_scored_counts <- all_scored %>%
+  dplyr::select(participant, questionScore, itemScore) %>%
+  dplyr::group_by(participant, questionScore, itemScore) %>%
+  dplyr::tally() %>%
+  # merge item and question
+  tidyr::unite(col = itemmem_questmem, itemScore, questionScore) %>%
+  tidyr::spread(key = itemmem_questmem, value = n) %>%
+  dplyr::select(-participant) %>%
+  dplyr::summarise_all(funs(sum(., na.rm = TRUE)))
+
+#' ### Merge all and compute source mem rates
+behav_all_counts <- item_scored_counts %>%
+  dplyr::full_join(source_liberal_scored_counts, by = "participant") %>%
+  dplyr::full_join(source_exact_scored_counts, by = "participant") %>%
+  dplyr::full_join(sourceXitemmem_exact_scored_counts, by = "participant") %>%
+  dplyr::full_join(sourceXitemmem_liberal_scored_counts, by = "participant") %>%
+  # now make the subject id match other dataframes
+  dplyr::mutate(subj_id = sprintf('s%s', participant)) %>%
+  # Remove participants who have less than 30 remembered trials or are listed in "exclude_subjects"
+  dplyr::filter(Rec > rem_trialnums_cutoff) %>%
+  dplyr::filter(!participant %in% exclude_subjects) %>%
+  # compute source memory rates
+  dplyr::mutate(source_questiontype_hitrate = correct_questiontype / num_old, 
+                source_exact_hitrate = correct / num_old)
+
+
+
+#' ## Mean and SD for item and source memory
+item_and_source_stats <- behav_all_counts %>%
   dplyr::ungroup() %>%
-  dplyr::group_by(subj_factor) %>%
-  dplyr::mutate(z_resprate = ((resprate - mean_resprate) / sd_resprate))
+  dplyr::summarise(mean_rem_rate = mean(rem_hit_rate),
+                   sd_rem_rate = sd(rem_hit_rate),
+                   mean_fam_rate = mean(fam_hit_rate),
+                   sd_fam_rate = sd(fam_hit_rate),
+                   mean_cr_rate = mean(cr_rate),
+                   sd_cr_rate = sd(cr_rate),
+                   mean_rem_fa_rate = mean(rem_fa_rate),
+                   sd_rem_fa_rate = sd(rem_fa_rate),
+                   mean_fam_fa_rate = mean(fam_fa_rate),
+                   sd_fam_fa_rate = sd(fam_fa_rate),
+                   mean_source_exact_rate = mean(source_exact_hitrate),
+                   sd_source_exact_rate = sd(source_exact_hitrate),
+                   mean_source_liberal_rate = mean(source_questiontype_hitrate),
+                   sd_source_liberal_rate = sd(source_questiontype_hitrate),
+                   mean_rec_dualprocess = mean(rec_dualprocess),
+                   sd_rec_dualprocess = sd(rec_dualprocess),
+                   mean_fam_dualprocess = mean(fam_dualprocess),
+                   sd_fam_dualprocess = sd(fam_dualprocess),
+                   mean_source_rem = mean(Rec_correct/(Rec_correct + Rec_incorrect)),
+                   sd_source_rem = sd(Rec_correct/(Rec_correct + Rec_incorrect)),
+                   mean_source_fam = mean(Fam_correct/(Fam_correct + Fam_incorrect)),
+                   sd_source_fam = sd(Fam_correct/(Fam_correct + Fam_incorrect))) %>%
+  tidyr::gather(key = "measure", value = "value")
 
-head(z_resprate_oldNew)
+print(item_and_source_stats, n = nrow(item_and_source_stats))
+source_rec_rate <- behav_all_counts$Rec_correct/(behav_all_counts$Rec_correct + behav_all_counts$Rec_incorrect)
+source_fam_rate <- behav_all_counts$Fam_correct/(behav_all_counts$Fam_correct + behav_all_counts$Fam_incorrect)
 
-# separate out FA
-false_alarms_oldNew <- z_resprate_oldNew %>%
-  dplyr::filter(oldNew == "new") %>%
-  dplyr::filter(itemResp_oldNew == "old") %>%
-  dplyr::rename(fa_z_resprate = z_resprate) %>%
-  dplyr::select(subj_factor, fa_z_resprate, itemResp_oldNew)
+t.test(source_rec_rate, source_fam_rate, paired = TRUE)
 
-head(false_alarms_oldNew)
+t.test(source_rec_rate, mu = 0.25, alternative = "greater")
+t.test(source_fam_rate, mu = 0.25, alternative = "greater")
 
-# separate out hits
-hits_oldNew <- z_resprate_oldNew %>%
-  dplyr::filter(oldNew == "old") %>%
-  dplyr::filter(itemResp_oldNew == "old") %>%  
-  dplyr::rename(hit_z_resprate = z_resprate) %>%
-  dplyr::select(subj_factor, hit_z_resprate, itemResp_oldNew)
-
-head(hits_oldNew)
-
-# compute d'
-d_prime_vals_oldNew <- hits_oldNew %>%
-  dplyr::left_join(false_alarms_oldNew) %>%
-  dplyr::group_by(subj_factor) %>%
-  dplyr::mutate(d_prime = hit_z_resprate - fa_z_resprate)
-
-head(d_prime_vals_oldNew)
-
-#' ## Test d' vs 0
-t.test(x = d_prime_vals_oldNew$d_prime, mu = 0)
-
-d_prime_vals_oldNew %>%
-  dplyr::ungroup() %>%
-  dplyr::rename(var1 = d_prime) %>%
-  dplyr::select(var1) %>%
-  halle::compute_cohens_d_vs_0(.)
-
-#' ## Graph d'
-d_prime_vals_oldNew %>%
-  dplyr::ungroup() %>%
-  ggplot2::ggplot(ggplot2::aes(x = itemResp_oldNew, y = d_prime)) +
-  ggplot2::geom_boxplot(width = 0.4) +
-  ggplot2::geom_point(ggplot2::aes(color = subj_factor),
-                      position = ggplot2::position_jitterdodge()) +
-  ggplot2::ggtitle("Sensitivity index: Item Recognition") +
-  ggplot2::ylab("hit_z_resprate - fa_z_resprate") +
-  ggplot2::theme(legend.position = "none", 
-                 plot.title = element_text(hjust = 0.5, size = 20),
-                 axis.title.x = element_blank(), axis.text.x = element_blank(),
-                 axis.title.y = element_text(size = 20), axis.text.y = element_text(size = 15))
-
-if(SAVE_FLAG){
-  ggplot2::ggsave(filename = paste0(plots_dir, "item_recog_d_prime.pdf"), width = 6, height = 4)
-}
-
-#' # Recollection vs Familiarity
-item_respcount <- recdata %>%
-  dplyr::group_by(subj_factor, oldNew, item_recog_resp, itemScore) %>%
-  dplyr::summarise(respcount = length(item_recog_resp)) %>%
-  dplyr::ungroup() 
-head(item_respcount)
-
-# check that each subject made R_FA responses; if not, insert zeros
-subjs <- unique(item_respcount$subj_factor)
-for(isubj in 1:length(subjs)){
-  cur_subj <- subjs[isubj]
-  
-  cur_dat <- item_respcount %>%
-    dplyr::filter(subj_factor == cur_subj)
-  
-  if("R-FA" %in% unique(cur_dat$itemScore)){
-    print(sprintf("%s has R-FA responses - continuing", cur_subj))
-  } else {
-    print(sprintf("%s does not has R-FA responses - inserting zeros", cur_subj))
-    num_rows <- dim(cur_dat)[1]
-    cur_dat[num_rows+1,]$subj_factor <- cur_subj
-    cur_dat[num_rows+1,]$oldNew <- "new"
-    cur_dat[num_rows+1,]$item_recog_resp <- "rem"
-    cur_dat[num_rows+1,]$itemScore <- "R-FA"
-    cur_dat[num_rows+1,]$respcount <- 0
-    
-    # merge back into the existing dataframe
-    item_respcount <- dplyr::full_join(item_respcount, cur_dat, by = intersect(names(item_respcount), names(cur_dat)))
-  }
-}
-
-item_rates <- recdata %>%
-  dplyr::group_by(subj_factor, oldNew) %>%
-  dplyr::summarise(allcount = length(oldNew)) %>%
-  dplyr::left_join(item_respcount) %>%
-  dplyr::mutate(resprate = respcount/allcount) 
-head(item_rates)
-
-item_rates_split <- item_rates %>%
-  dplyr::select(subj_factor, itemScore, resprate) %>%
-  dplyr::filter(!is.na(itemScore)) %>%
-  dplyr::filter(itemScore!="exclude") %>%
-  as.data.frame() %>%
-  dplyr::mutate(item_score_relabel = dplyr::recode_factor(itemScore, `R-FA` = "R_FA", `F-FA` = "F_FA")) %>%
-  dplyr::select(-itemScore) %>%
-  tidyr::spread(item_score_relabel, resprate) %>%
-  as.data.frame()
-head(item_rates_split)
-
-rec_fam <- item_rates_split %>%
-  # dplyr::group_by(subj_factor) %>%
-  # dual process equations for recollection and familiarity
-  # see Libby schizo review for equations
-  dplyr::mutate(recollection = (Rec - R_FA) / (1 - R_FA),
-                familiarity = ((Fam / ((1 - Rec)) - (F_FA/(1 - R_FA))))) %>%
-  tidyr::gather(process_type, estimate, recollection:familiarity)
-summary(rec_fam)
-
-#' ## Test that process estimates differ from zero
-rec_fam_tt <- rec_fam %>%
-  tidyr::spread(process_type, estimate) %>%
-  dplyr::ungroup() 
-
-#' ### Recollection
-t.test(rec_fam_tt$recollection, mu = 0)
-
-rec_fam_tt %>%
-  dplyr::rename(var1 = recollection) %>%
-  dplyr::select(var1) %>%
-  halle::compute_cohens_d_vs_0(.)
-
-#' ### Familiarity
-t.test(rec_fam_tt$familiarity, mu = 0)
-
-rec_fam_tt %>%
-  dplyr::rename(var1 = familiarity) %>%
-  dplyr::select(var1) %>%
-  halle::compute_cohens_d_vs_0(.)
-
-#' ## Graph recollection and familiarity estimates
-rec_fam %>%
-  ggplot2::ggplot(ggplot2::aes(x = process_type, y = estimate)) +
-  ggplot2::geom_boxplot(width = 0.5) +
-  ggplot2::geom_point(ggplot2::aes(color = subj_factor),
-                      position = ggplot2::position_jitterdodge()) +
-  ggplot2::ggtitle("Dual process estimates") +
-  ggplot2::ylab("mean estimate value") +
-  ggplot2::theme(legend.position = "none",
-                 plot.title = element_text(hjust = 0.5, size = 20),
-                 axis.title.x = element_blank(), 
-                 strip.text.x = element_text(size = 20), strip.background.x = element_rect(fill = "white"),
-                 axis.title.y = element_text(size = 20), axis.text.y = element_text(size = 15)) +
-  ggplot2::theme(axis.text.x = element_blank())
-
-if(SAVE_FLAG){
-  ggplot2::ggsave(filename = paste0(plots_dir, "dual_process_estimates.pdf"), width = 6, height = 4)
-}
-
-rec_fam %>%
-  # change x-axis labels to match source memory plots
-  dplyr::mutate(process_type = dplyr::recode(process_type, "familiarity" = "fam", "recollection" = "rec")) %>%
-  ggplot2::ggplot(ggplot2::aes(x = process_type, y = estimate)) +
-  ggplot2::geom_boxplot(width = 0.3) +
-  ggplot2::geom_point(ggplot2::aes(color = subj_factor),
-                      position = ggplot2::position_jitterdodge(0.1)) +
-  ggplot2::ggtitle("Dual Process Estimates") +
-  ggplot2::ylab("mean estimate value") +
-  ggplot2::theme(legend.position = "none",
-                 plot.title = element_text(hjust = 0.5, size = 20),
-                 axis.title.x = element_blank(), 
-                 strip.text.x = element_text(size = 20), axis.text.x = element_text(size = 20),
-                 strip.background.x = element_rect(fill = "white"),
-                 axis.title.y = element_text(size = 20), axis.text.y = element_text(size = 15)) 
-
-
-
-#' # Graph question source 
-#' ## Counts
-recdata %>%
-  dplyr::filter(oldNew == "old") %>%
-  dplyr::filter(questionScore != "random_response") %>%
-  dplyr::group_by(subj_factor, questionScore) %>%
-  dplyr::mutate(respFreq = length(questionScore)) %>%
-  dplyr::summarise(count = n()) %>%
-  plot_counts_no_facet(., "questionScore", "count", "Mean count of question source accuracy")
-p
-
-
-#' ## rates
-questXitem_resprates <- recdata %>%
-  dplyr::filter(!subj_factor == "106") %>%
-  dplyr::filter(oldNew == "old") %>%
-  dplyr::filter(itemScore %in% c("Rec", "Fam")) %>%
-  dplyr::group_by(subj_factor, itemScore) %>%
-  dplyr::summarise(allcount = length(encQuest_factor)) %>%
-  dplyr::left_join(questXitem_respcount) %>%
-  dplyr::mutate(resprate = respcount/allcount) %>%
-  dplyr::group_by(questionScore, itemScore) %>%
-  dplyr::summarise(mean_resprate = mean(resprate),
-                   sd_resprate = sd(resprate),
-                   num_subj = length(resprate),
-                   sem_resprate = sd_resprate / sqrt(num_subj)) 
-print(questXitem_resprates)
-
-#' ## Source memory statistics
-questXitem_resprates <- recdata %>%
-  filter(!subj_factor == "106") %>%
-  filter(oldNew == "old") %>%
-  filter(itemScore %in% c("Rec", "Fam")) %>%
-  group_by(subj_factor, itemScore) %>%
-  summarise(allcount = length(encQuest_factor)) %>%
-  left_join(questXitem_respcount) %>%
-  mutate(resprate = respcount/allcount) %>%
-  group_by(questionScore, itemScore) %>%
-  summarise(shapiro = shapiro.test(resprate)$p.value,
-                   t_test_stat = t.test(resprate, mu = 0.25, alternative = "greater")$statistic,
-                   t_test_p = t.test(resprate, mu = 0.25, alternative = "greater")$p.value,
-                   t_test_df = t.test(resprate, mu = 0.25, alternative = "greater")$parameter,
-                   t_test_mean = t.test(resprate, mu = 0.25, alternative = "greater")$estimate)
-print(questXitem_resprates)
 
 
 
