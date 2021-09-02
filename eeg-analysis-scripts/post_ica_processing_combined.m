@@ -4,4 +4,3 @@ remove_manual_bad_epochs
 merge 
 count_erp_epochs
 baseline
-compute_subj_integrals_no_study
