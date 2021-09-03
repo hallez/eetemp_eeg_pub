@@ -17,9 +17,7 @@ function erp_plotting(fig_name, eeg_chans, all_eeg_times, eeg_times, data1, colo
     hold on
     plot(all_eeg_times(eeg_times(1):eeg_times(2)), mean(data2(eeg_times(1):eeg_times(2), eeg_chans), 2), 'Color', color2, 'LineWidth', 2)
     plot(all_eeg_times(eeg_times(1):eeg_times(2)), mean(data3(eeg_times(1):eeg_times(2), eeg_chans), 2), 'Color', color3, 'LineWidth', 2, 'LineStyle', '--')
-    plot(all_eeg_times(eeg_times(1):eeg_times(2)), zeros(size([eeg_times(1):eeg_times(2)],2),1), 'k')
-    %line(zeros([1, 2]), get(h,'YLim'), 'Color', 'k', 'LineWidth', 1, 'LineStyle', '-');
-    ylim([-3, 4])
+    plot(all_eeg_times(eeg_times(1):eeg_times(2)), zeros(size(eeg_times(1):eeg_times(2),2),1), 'k')
     set(gca, 'FontSize', 20)
     legend(legend_str, 'FontSize', 18)
     saveas(h, outname)
