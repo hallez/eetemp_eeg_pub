@@ -55,6 +55,8 @@ pip install -r requirements.txt
 1. Generate behavioral analyses `analyze-behavior.R`
 
 # EEG Analysis
+* these scripts are located in the `eeg-analysis-scripts` folder
+
 ## Preprocessing
 --- Can run through `ica.m` using `preproc_combined.m` ---
 1. Downsample the data to 128 Hz `downsample_preproc.m`
@@ -79,6 +81,7 @@ pip install -r requirements.txt
 1. Manually review ICA components `ica_btw_data.m` (to manually review)
    * This is where the two different HPF data streams get merged. Based on Makoto recommendations, the ICA components are computed on 1Hz HPF data and then applied to the 0.1 HPF data.
 1. Create subject-specific files for blink components to remove (script also generates information about bad channels and epochs): `create_subject_drop_files.py`
+
 --- Can run following steps with the script `post_ica_processing_combined.m` ---
 1. Remove eyeblink components: `ica_btw_data_no_manual.m`
 1. Interpolate removed channels. `interpolate_chans.m`
