@@ -92,12 +92,12 @@ pip install -r requirements.txt
 1. Baseline correct ERPs `baseline.m`
 
 ## Plotting
-1. Group-level ERPs `plot_erps.m` and `erp_plotting.m`
+1. Group-level ERPs `plot_erps.m` and `erp_plotting.m`. For plotting with shaded SD, choose `plot_erps_shaded.m` and `erp_plotting_shaded.m`.
 
 ## Nonparametric cluster-based permutation analysis
 1. Perform the comparison between Familiar and Correct Rejection ERP trials as well as Remember and Familiar ERP trials at the group level `permutation_analysis_overall.m`. Need to have 'biosemi64new.lay' channel layout file.
 1. Plot the overall Familiar - Correct Rejection and Remember - Familiar effects, respectively, corresponding roughly to the significant clusters identified in the data-driven permutation analysis `permutation_analysis_overall_plot_familiarity.m` and `permutation_analysis_overall_plot_recollection.m` 
 
 ## Correlation between ERPs and behavioral data
-1. Perform the correlation analysis between Familiar - Correct Rejection ERP differences with familiarity behavioral estimates and between Remember - Familiar ERP differences with recollection behavioral estimates `permutation_analysis_correlation.m`
-1. Plot the familiarity and recollection correlation effects, respectively, corresponding roughly to the significant clusters identified in the data-driven permutation analysis `permutation_analysis_correlation_plot_familiarity.m` and `permutation_analysis_correlation_plot_recollection.m`
+1. Perform the correlation analysis between Familiar - Correct Rejection ERP differences with familiarity behavioral estimates and between Remember - Familiar ERP differences with recollection behavioral estimates `permutation_analysis_correlation.m`. For analysis with equalized number of trials, choose `permutation_analysis_correlation_randtrials.m`.
+1. Plot the familiarity and recollection correlation effects, respectively, corresponding roughly to the significant clusters identified in the data-driven permutation analysis `permutation_analysis_correlation_plot_familiarity.m` and `permutation_analysis_correlation_plot_recollection.m`. 
